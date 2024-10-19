@@ -1,3 +1,2 @@
-# formsubmitting
 # Healthty 
-Repositry of our solution (Decentrathon)
+Repositry of our solution (Decentrathon 3.0)
