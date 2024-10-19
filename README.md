@@ -1,3 +1,3 @@
 # formsubmitting
-# H1 Healthty 
+# Healthty 
 Repositry of our solution (Decentrathon)
