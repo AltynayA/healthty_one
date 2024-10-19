@@ -29,55 +29,82 @@ function loading() {
   } 
 
 
-  function toggleChat() {
-    const chatbox = document.getElementById('chatbox');
-    chatbox.style.display = (chatbox.style.display === 'block') ? 'none' : 'block';
-}
+  document.getElementById('openChat').addEventListener('click', function() {
+    document.querySelector('.chatbox').style.display = 'block';
+    this.style.display = 'none';
+});
+
+document.getElementById('closeChat').addEventListener('click', function() {
+    document.querySelector('.chatbox').style.display = 'none';
+    document.getElementById('openChat').style.display = 'block';
+});
 
 function sendMessage() {
     const messageInput = document.getElementById('messageInput');
     const chatMessages = document.getElementById('chat-messages');
     
     if (messageInput.value.trim() !== "") {
-
+        // Отправляем сообщение пользователя
         const userMessage = document.createElement('div');
-        userMessage.textContent = "You: " + messageInput.value;
+        userMessage.textContent = "Вы: " + messageInput.value;
         userMessage.classList.add('user-message');
         chatMessages.appendChild(userMessage);
 
+        // Индикатор загрузки
+        const loadingMessage = document.createElement('div');
+        loadingMessage.textContent = "Бот: Загрузка...";
+        loadingMessage.classList.add('bot-message');
+        chatMessages.appendChild(loadingMessage);
+        chatMessages.scrollTop = chatMessages.scrollHeight; // Прокручиваем чат вниз
 
-        fetch('https://gemini-api-url.com/v1/chat', {
+        // Отправляем запрос к API
+        fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=AIzaSyAGkk6jWBgrN-LomV7Kx3THmhCuEfBQQ80', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'Bearer YOUR_API_KEY' 
             },
             body: JSON.stringify({
-                message: messageInput.value
+                contents: [{
+                    parts: [{
+                        text: messageInput.value // Текст сообщения пользователя
+                    }]
+                }]
             })
         })
         .then(response => response.json())
         .then(data => {
-            const botMessage = document.createElement('div');
-            botMessage.textContent = "Бот: " + data.response; 
-            botMessage.classList.add('bot-message');
-            chatMessages.appendChild(botMessage);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+            console.log("Ответ от API:", data); // Выводим ответ в консоль
+            chatMessages.removeChild(loadingMessage); // Удаляем индикатор загрузки
+
+            if (data && data.contents && data.contents[0] && data.contents[0].parts[0].text) {
+                const botMessage = document.createElement('div');
+                botMessage.textContent = "Бот: " + data.contents[0].parts[0].text; 
+                botMessage.classList.add('bot-message');
+                chatMessages.appendChild(botMessage);
+            } else {
+                const errorMessage = document.createElement('div');
+                errorMessage.textContent = "Ошибка: некорректный ответ от API.";
+                errorMessage.classList.add('bot-message');
+                chatMessages.appendChild(errorMessage);
+            }
+            chatMessages.scrollTop = chatMessages.scrollHeight; // Прокручиваем чат вниз
         })
         .catch(error => {
             console.error('Ошибка:', error);
+            chatMessages.removeChild(loadingMessage); // Удаляем индикатор загрузки
+            const errorMessage = document.createElement('div');
+            errorMessage.textContent = "Ошибка: не удалось связаться с API.";
+            errorMessage.classList.add('bot-message');
+            chatMessages.appendChild(errorMessage);
         });
 
-        messageInput.value = ''; 
+        messageInput.value = ''; // Очищаем поле ввода
     }
 }
 
-document.getElementById('messageInput').addEventListener('keydown', function(event) {
-    if (event.key === 'Enter') {
-        sendMessage();
-    }
-});
 
+
+  
 /*document.getElementById('submitForm').addEventListener('click', function() {
     const fname = document.getElementById('fname').value;
     const lname = document.getElementById('lname').value;
